@@ -1,36 +1,79 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 개인 색상 테스트 (Personal Color Test)
 
-## Getting Started
+당신만의 퍼스널 컬러를 찾아보는 웹 애플리케이션입니다.
 
-First, run the development server:
+## 프로젝트 개요
+
+간단한 8개의 질문을 통해 사용자의 퍼스널 컬러를 진단하고, 맞춤형 색상 팔레트와 스타일링 조언을 제공하는 Next.js 기반 웹 애플리케이션입니다.
+
+## 기술 스택
+
+- **프레임워크**: Next.js 15.4.6 (App Router)
+- **언어**: TypeScript
+- **스타일링**: Tailwind CSS v4
+- **패키지 매니저**: pnpm
+
+## 실행 방법
+
+### 1. 의존성 설치
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. 개발 서버 실행
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+pnpm dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 3. 브라우저에서 확인
 
-## Learn More
+[http://localhost:3000](http://localhost:3000)에서 애플리케이션을 확인할 수 있습니다.
 
-To learn more about Next.js, take a look at the following resources:
+## 프로젝트 구조
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+app/
+├── layout.tsx          # 루트 레이아웃 (헤더, 푸터 포함)
+├── page.tsx           # 홈페이지 (랜딩 페이지)
+├── test/
+│   └── page.tsx       # 테스트 페이지 (진행률 표시)
+├── result/
+│   └── page.tsx       # 결과 페이지
+└── globals.css        # 전역 스타일
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 주요 기능
 
-## Deploy on Vercel
+- **📱 반응형 디자인**: 모바일 우선 설계
+- **🎨 색상 테스트**: 8단계 질문을 통한 퍼스널 컬러 진단
+- **✨ 맞춤 추천**: 개인별 색상 팔레트 및 스타일링 조언
+- **🌐 다국어 지원**: 한국어/영어 (준비 중)
+- **♿ 접근성**: ARIA 속성 및 키보드 네비게이션 지원
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 라우트
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `/` - 홈페이지 (시작 버튼)
+- `/test` - 테스트 페이지 (Q1/8 진행 표시)
+- `/result` - 결과 페이지 (색상 팔레트 및 추천사항)
+
+## 개발 가이드
+
+프로젝트 개발 시 `PROJECT_RULES.md` 파일의 규칙을 준수해주세요:
+
+- 모든 텍스트는 한국어로 작성
+- UI 텍스트 하드코딩 금지 (i18n 사용)
+- Tailwind CSS 기본 사용
+- 접근성 준수 (aria-*, role, 키보드 포커스)
+
+## 빌드 및 배포
+
+```bash
+# 프로덕션 빌드
+pnpm build
+
+# 프로덕션 서버 실행
+pnpm start
+```
+# test-color
