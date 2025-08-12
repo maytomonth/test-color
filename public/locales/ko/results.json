@@ -1,0 +1,26 @@
+[
+  {
+    "id": "spring",
+    "label": "봄 웜톤 (Spring Warm)",
+    "description": "맑고 따뜻한 색이 잘 어울리는 생기 있는 타입입니다.",
+    "colors": ["#FFE6CC", "#FFD3B6", "#FFB6B6", "#F6F6A3", "#B5EAD7"]
+  },
+  {
+    "id": "summer",
+    "label": "여름 쿨톤 (Summer Cool)",
+    "description": "부드럽고 차분한 분위기의 소프트한 쿨톤 타입입니다.",
+    "colors": ["#D6EAF8", "#AED6F1", "#E8DAEF", "#FADBD8", "#EAECEE"]
+  },
+  {
+    "id": "fall",
+    "label": "가을 웜톤 (Autumn Warm)",
+    "description": "풍성하고 안정적인 느낌의 따뜻한 색이 어울리는 타입입니다.",
+    "colors": ["#D4A373", "#B08968", "#A98467", "#E6B89C", "#F4A261"]
+  },
+  {
+    "id": "winter",
+    "label": "겨울 쿨톤 (Winter Cool)",
+    "description": "선명하고 또렷한 색감이 잘 어울리는 시크한 타입입니다.",
+    "colors": ["#2E86C1", "#5D6D7E", "#641E16", "#1C2833", "#A569BD"]
+  }
+]

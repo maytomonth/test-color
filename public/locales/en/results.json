@@ -1,0 +1,26 @@
+[
+  {
+    "id": "spring",
+    "label": "Spring Warm",
+    "description": "Clear and warm shades bring out a lively look.",
+    "colors": ["#FFE6CC", "#FFD3B6", "#FFB6B6", "#F6F6A3", "#B5EAD7"]
+  },
+  {
+    "id": "summer",
+    "label": "Summer Cool",
+    "description": "Soft and calm tones suit you best.",
+    "colors": ["#D6EAF8", "#AED6F1", "#E8DAEF", "#FADBD8", "#EAECEE"]
+  },
+  {
+    "id": "fall",
+    "label": "Autumn Warm",
+    "description": "Rich, warm colors with a grounded feel look great on you.",
+    "colors": ["#D4A373", "#B08968", "#A98467", "#E6B89C", "#F4A261"]
+  },
+  {
+    "id": "winter",
+    "label": "Winter Cool",
+    "description": "High-contrast, vivid colors create a chic impression.",
+    "colors": ["#2E86C1", "#5D6D7E", "#641E16", "#1C2833", "#A569BD"]
+  }
+]

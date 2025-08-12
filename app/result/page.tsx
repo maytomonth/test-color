@@ -1,125 +1,317 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from "next/link";
+import { getInitialLocale, loadUIMessages, loadResults, type UIMessages, type Result } from '@/lib/i18n';
+import { useQuiz } from '@/context/QuizContext';
+import type { PersonalColorResult } from '@/types/quiz';
+import { gaViewResult, gaShareResult } from '@/lib/ga-events';
+import ResultHeader from '@/components/ResultHeader';
+import { PaletteGrid } from '@/components/PaletteGrid';
+import PercentBars from '@/components/PercentBars';
+import ShareButton from '@/components/ShareButton';
+import AdSlot from '@/components/AdSlot';
+import Toast from '@/components/Toast';
+import ToastPortal from '@/components/ToastPortal';
+import SkeletonCard from '@/components/SkeletonCard';
 
 export default function ResultPage() {
-  return (
-    <div className="max-w-4xl mx-auto">
-      {/* Result Header */}
-      <div className="text-center mb-12">
-        <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-6">
-          <span className="text-3xl">🎉</span>
-        </div>
-        <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-          테스트 완료!
-        </h1>
-        <p className="text-lg text-gray-600">
-          당신의 퍼스널 컬러 결과를 확인해보세요
-        </p>
-      </div>
+  const [result, setResult] = useState<PersonalColorResult | null>(null);
+  const [resultData, setResultData] = useState<Result | null>(null);
+  const [secondResultData, setSecondResultData] = useState<Result | null>(null);
+  const [uiMessages, setUIMessages] = useState<UIMessages | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [locale, setLocale] = useState<string>('ko');
+  const [hasTrackedView, setHasTrackedView] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  
+  const { reset } = useQuiz();
+  const router = useRouter();
 
-      {/* Main Result Card */}
-      <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-8">
-        <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-8 text-white text-center">
-          <h2 className="text-2xl md:text-3xl font-bold mb-2">쿨 톤 (Cool Tone)</h2>
-          <p className="text-blue-100">당신에게 가장 잘 어울리는 색상 타입입니다</p>
-        </div>
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        // sessionStorage에서 결과 로드 및 라우트 가드
+        const storedResult = sessionStorage.getItem('pctResult');
+        if (!storedResult) {
+          // 현재 로케일 로드하여 적절한 메시지 표시
+          const currentLocale = getInitialLocale();
+          const uiData = await loadUIMessages(currentLocale);
+          setToastMessage(uiData.needTestFirst || '테스트부터 진행해주세요');
+          setShowToast(true);
+          
+          // 토스트 표시 후 리다이렉트
+          setTimeout(() => {
+            router.push('/test');
+          }, 1000);
+          return;
+        }
+
+        let parsedResult: PersonalColorResult;
+        try {
+          parsedResult = JSON.parse(storedResult);
+          // 결과 데이터 유효성 검증
+          if (!parsedResult.topType || !parsedResult.results || !Array.isArray(parsedResult.results)) {
+            throw new Error('Invalid result data');
+          }
+        } catch (parseError) {
+          // 잘못된 데이터인 경우 세션스토리지 정리하고 리다이렉트
+          sessionStorage.removeItem('pctResult');
+          const currentLocale = getInitialLocale();
+          const uiData = await loadUIMessages(currentLocale);
+          setToastMessage(uiData.needTestFirst || '테스트부터 진행해주세요');
+          setShowToast(true);
+          
+          setTimeout(() => {
+            router.push('/test');
+          }, 1000);
+          return;
+        }
+        setResult(parsedResult);
+
+        // 현재 로케일 데이터 로드
+        const currentLocale = getInitialLocale();
+        setLocale(currentLocale);
+        const [uiData, resultsData] = await Promise.all([
+          loadUIMessages(currentLocale),
+          loadResults(currentLocale)
+        ]);
         
-        <div className="p-8">
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* Color Palette */}
-            <div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">추천 색상 팔레트</h3>
-              <div className="grid grid-cols-4 gap-3 mb-6">
-                <div className="aspect-square bg-blue-500 rounded-lg shadow-sm"></div>
-                <div className="aspect-square bg-purple-500 rounded-lg shadow-sm"></div>
-                <div className="aspect-square bg-teal-500 rounded-lg shadow-sm"></div>
-                <div className="aspect-square bg-indigo-500 rounded-lg shadow-sm"></div>
-                <div className="aspect-square bg-emerald-500 rounded-lg shadow-sm"></div>
-                <div className="aspect-square bg-cyan-500 rounded-lg shadow-sm"></div>
-                <div className="aspect-square bg-violet-500 rounded-lg shadow-sm"></div>
-                <div className="aspect-square bg-slate-600 rounded-lg shadow-sm"></div>
-              </div>
-            </div>
+        setUIMessages(uiData);
+        
+        // Top1과 Top2 결과 데이터 찾기
+        const topResult = resultsData.find(r => r.id === parsedResult.topType);
+        const secondResult = resultsData.find(r => r.id === parsedResult.secondType);
+        
+        setResultData(topResult || null);
+        setSecondResultData(secondResult || null);
+        
+        // Track result view once data is loaded
+        if (topResult && !hasTrackedView) {
+          gaViewResult({
+            topType: parsedResult.topType,
+            secondType: parsedResult.secondType,
+            results: parsedResult.results.map(({ type, percent }) => ({ type, percent })),
+            locale: currentLocale
+          });
+          setHasTrackedView(true);
+        }
+      } catch (err) {
+        console.error('Error loading result data:', err);
+        setError('결과를 불러오는 중 오류가 발생했습니다.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-            {/* Characteristics */}
-            <div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">당신의 특징</h3>
-              <ul className="space-y-3">
-                <li className="flex items-start">
-                  <span className="text-blue-500 mr-2">✓</span>
-                  <span className="text-gray-700">차가운 톤의 색상이 피부를 더욱 밝게 만들어줍니다</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-blue-500 mr-2">✓</span>
-                  <span className="text-gray-700">블루, 퍼플, 그레이 계열이 잘 어울립니다</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-blue-500 mr-2">✓</span>
-                  <span className="text-gray-700">실버 액세서리가 골드보다 더 잘 어울립니다</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-blue-500 mr-2">✓</span>
-                  <span className="text-gray-700">세련되고 모던한 스타일을 선호합니다</span>
-                </li>
-              </ul>
+    loadData();
+  }, []);
+
+  const handleRetry = () => {
+    reset();
+    router.push('/test');
+  };
+
+  const handleCopy = async (hex: string) => {
+    try {
+      await navigator.clipboard.writeText(hex);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      console.error('Failed to copy color:', error);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="max-w-4xl mx-auto">
+        <div className="space-y-6">
+          {/* Header Skeleton */}
+          <div className="text-center space-y-4">
+            <SkeletonCard className="w-20 h-20 rounded-full mx-auto" />
+            <SkeletonCard className="h-8 w-64 mx-auto" />
+            <SkeletonCard className="h-6 w-48 mx-auto" />
+          </div>
+          
+          {/* Palette Skeleton */}
+          <div className="bg-white rounded-2xl shadow-lg p-6">
+            <SkeletonCard className="h-6 w-32 mb-4" />
+            <div className="grid grid-cols-4 gap-3">
+              {[...Array(8)].map((_, i) => (
+                <SkeletonCard key={i} className="aspect-square rounded-lg" />
+              ))}
+            </div>
+          </div>
+          
+          {/* Results Skeleton */}
+          <div className="bg-white rounded-2xl shadow-lg p-6">
+            <SkeletonCard className="h-6 w-40 mb-4" />
+            <div className="space-y-3">
+              {[...Array(4)].map((_, i) => (
+                <SkeletonCard key={i} className="h-8" />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !result || !uiMessages || !resultData) {
+    return (
+      <div className="max-w-4xl mx-auto text-center">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <p className="text-red-800 mb-4">{error || '결과를 표시할 수 없습니다.'}</p>
+          <button
+            onClick={handleRetry}
+            className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+          >
+            테스트 다시하기
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-6xl mx-auto space-y-8">
+      {/* Result Header */}
+      <ResultHeader
+        label={resultData.label}
+        description={resultData.description}
+        percent={result.results[0].percent}
+        colors={resultData.colors}
+        className="mb-12"
+      />
+
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Top 1 Section */}
+        <div className="lg:col-span-2 space-y-6">
+          <div className="bg-white rounded-2xl shadow-lg p-6">
+            <h3 className="text-xl font-bold text-gray-900 mb-4">
+              {uiMessages.yourColorPalette}
+            </h3>
+            <PaletteGrid colors={resultData.colors} onColorClick={handleCopy} />
+            <p className="text-sm text-gray-500 mt-4 text-center">
+              {uiMessages.copyColorCode}
+            </p>
+          </div>
+
+          {/* Top 2 Comparison */}
+          {secondResultData && (
+            <div className="bg-white rounded-2xl shadow-lg p-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                {uiMessages.secondBestMatch}: {secondResultData.label}
+                <span className="ml-2 inline-flex items-center rounded-full bg-blue-100 text-blue-800 text-xs px-2 py-0.5">
+                  {uiMessages.matchRate}
+                </span>
+              </h3>
+              <p className="text-gray-600 mb-4">
+                {secondResultData.description}
+              </p>
+              <PaletteGrid colors={secondResultData.colors.slice(0, 4)} />
+            </div>
+          )}
+        </div>
+
+        {/* Sidebar */}
+        <div className="space-y-6">
+          {/* Percent Bars */}
+          <div className="bg-white rounded-2xl shadow-lg p-6">
+            <h3 className="text-xl font-bold text-gray-900 mb-4">
+              {uiMessages.detailedAnalysis}
+            </h3>
+            <PercentBars results={result.results} locale={locale} />
+          </div>
+
+          {/* Action Buttons */}
+          <div className="bg-white rounded-2xl shadow-lg p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              {uiMessages.nextSteps}
+            </h3>
+            <div className="space-y-3">
+              <button
+                onClick={handleRetry}
+                className="w-full px-4 py-3 text-white rounded-lg hover:brightness-95 transition-colors duration-200 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:ring-offset-2"
+                style={{ backgroundColor: '#3B82F6' }}
+                aria-label="테스트 다시하기"
+              >
+                {uiMessages.retakeTest}
+              </button>
+              
+              <ShareButton
+                result={{
+                  topType: resultData.label,
+                  percent: result.results[0].percent
+                }}
+                uiMessages={uiMessages}
+                className="w-full"
+              />
+              
+              <Link
+                href="/"
+                className="block w-full px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200 font-medium text-center focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+              >
+                {uiMessages.backHome}
+              </Link>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Recommendations */}
-      <div className="grid md:grid-cols-2 gap-6 mb-8">
+      {/* Additional Tips */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-white rounded-xl shadow-md p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
             <span className="text-2xl mr-2">👗</span>
-            패션 추천
+            {uiMessages.stylingTips}
           </h3>
           <ul className="space-y-2 text-gray-700">
-            <li>• 네이비, 차콜 그레이 정장</li>
-            <li>• 화이트, 아이보리 셔츠</li>
-            <li>• 블루 데님, 블랙 팬츠</li>
-            <li>• 쿨톤 패턴의 스카프나 넥타이</li>
+            <li>• {uiMessages.stylingTip1}</li>
+            <li>• {uiMessages.stylingTip2}</li>
+            <li>• {uiMessages.stylingTip3}</li>
+            <li>• {uiMessages.stylingTip4}</li>
           </ul>
         </div>
 
         <div className="bg-white rounded-xl shadow-md p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-            <span className="text-2xl mr-2">💄</span>
-            메이크업 추천
+            <span className="text-2xl mr-2">💡</span>
+            {uiMessages.usageGuide}
           </h3>
           <ul className="space-y-2 text-gray-700">
-            <li>• 핑크, 베리 톤 립스틱</li>
-            <li>• 블루, 퍼플 계열 아이섀도</li>
-            <li>• 쿨톤 베이스 파운데이션</li>
-            <li>• 로즈 또는 피치 블러셔</li>
+            <li>• {uiMessages.usage1}</li>
+            <li>• {uiMessages.usage2}</li>
+            <li>• {uiMessages.usage3}</li>
+            <li>• {uiMessages.usage4}</li>
           </ul>
         </div>
       </div>
 
-      {/* Action Buttons */}
-      <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-        <Link
-          href="/test"
-          className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium"
-        >
-          다시 테스트하기
-        </Link>
-        <Link
-          href="/"
-          className="px-8 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200 font-medium"
-        >
-          홈으로 돌아가기
-        </Link>
-        <button className="px-8 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200 font-medium">
-          결과 공유하기
-        </button>
-      </div>
-
-      {/* Additional Info */}
-      <div className="mt-12 text-center text-gray-500 text-sm">
+      {/* Ad Slot */}
+      <AdSlot label={uiMessages.adPlaceholder || '스폰서 영역'} className="my-8" />
+      
+      {/* Disclaimer */}
+      <div className="text-center text-gray-500 text-sm bg-gray-50 rounded-lg p-4">
         <p>
-          이 결과는 일반적인 가이드라인입니다. 개인의 취향과 상황에 따라 다를 수 있습니다.
+          {uiMessages.disclaimer}
         </p>
       </div>
+      
+      {/* Toast */}
+      <Toast message={uiMessages.copied || '복사됨'} show={copied} />
+      
+      {/* Toast Portal for Route Guard */}
+      <ToastPortal 
+        message={toastMessage} 
+        show={showToast} 
+        onClose={() => setShowToast(false)}
+      />
     </div>
   );
 }

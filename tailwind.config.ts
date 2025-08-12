@@ -1,6 +1,7 @@
 import type { Config } from "tailwindcss";
 
 export default {
+  darkMode: 'class',
   content: [
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -11,6 +12,15 @@ export default {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        brand: { 
+          DEFAULT: '#3B82F6' 
+        },
+        brandfg: { 
+          DEFAULT: '#FFFFFF' 
+        },
+        accent: { 
+          DEFAULT: '#F59E0B' 
+        },
       },
       container: {
         center: true,

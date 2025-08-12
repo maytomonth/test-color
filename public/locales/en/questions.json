@@ -1,0 +1,87 @@
+[
+  {
+    "id": "q1",
+    "text": "What is your skin tone?",
+    "type": "single",
+    "choices": [
+      { "label": "Light beige (tans easily)", "value": "light_beige", "color": "#FCE9D6", "score": { "spring": 1, "summer": 1, "fall": 0, "winter": 0 } },
+      { "label": "Medium tone (yellowish)", "value": "medium_yellow", "color": "#E1B87A", "score": { "spring": 1, "fall": 1, "summer": 0, "winter": 0 } },
+      { "label": "Olive or deep tone", "value": "dark_olive", "color": "#A96F4E", "score": { "fall": 1, "winter": 1, "spring": 0, "summer": 0 } }
+    ]
+  },
+  {
+    "id": "q2",
+    "text": "What color are the veins on the inside of your arm?",
+    "type": "single",
+    "choices": [
+      { "label": "Bluish (blue/purple)", "value": "blue_vein", "color": "#6EA8D6", "score": { "summer": 1, "winter": 1 } },
+      { "label": "Greenish veins", "value": "green_vein", "color": "#A5C48E", "score": { "spring": 1, "fall": 1 } },
+      { "label": "Hard to tell", "value": "not_visible", "color": "#CFCFCF", "score": { "winter": 1 } }
+    ],
+    "tip": "Check under bright light on the inner forearm."
+  },
+  {
+    "id": "q3",
+    "text": "How does your skin react after sun exposure?",
+    "type": "single",
+    "choices": [
+      { "label": "Burns easily and gets red", "value": "burns_easily", "score": { "summer": 1, "spring": 1 } },
+      { "label": "Tans brown without much redness", "value": "tans_brown", "score": { "fall": 1 } },
+      { "label": "Rarely tans", "value": "rarely_tans", "score": { "winter": 1 } }
+    ]
+  },
+  {
+    "id": "q4",
+    "text": "Which accessories suit you better?",
+    "type": "single",
+    "choices": [
+      { "label": "Silver accessories", "value": "silver", "score": { "summer": 1, "winter": 1 } },
+      { "label": "Gold accessories", "value": "gold", "score": { "spring": 1, "fall": 1 } },
+      { "label": "Both are fine", "value": "both", "score": { "spring": 1, "summer": 1 } }
+    ]
+  },
+  {
+    "id": "q5",
+    "text": "What is your natural eye color?",
+    "type": "single",
+    "choices": [
+      { "label": "Light brown / honey", "value": "light_brown", "score": { "spring": 1, "summer": 1 } },
+      { "label": "Medium brown", "value": "medium_brown", "score": { "fall": 1 } },
+      { "label": "Dark brown / almost black", "value": "dark_brown", "score": { "winter": 1 } }
+    ]
+  },
+  {
+    "id": "q6",
+    "text": "What is your natural hair color?",
+    "type": "single",
+    "choices": [
+      { "label": "Yellowish brown", "value": "yellow_brown", "score": { "spring": 1 } },
+      { "label": "Reddish brown", "value": "red_brown", "score": { "fall": 1 } },
+      { "label": "Ash brown / grayish brown", "value": "ash_brown", "score": { "summer": 1 } },
+      { "label": "Natural black / deep black", "value": "black", "score": { "winter": 1 } }
+    ]
+  },
+  {
+    "id": "q7",
+    "text": "Which clothing colors feel most flattering on you?",
+    "type": "single",
+    "choices": [
+      { "label": "Pastels, light tones", "value": "pastel", "score": { "spring": 1, "summer": 1 } },
+      { "label": "Vivid primary colors", "value": "vivid", "score": { "winter": 1 } },
+      { "label": "Dark warm tones", "value": "dark_warm", "score": { "fall": 1 } },
+      { "label": "Monotone (black/gray)", "value": "neutral", "score": { "winter": 1 } }
+    ]
+  },
+  {
+    "id": "q8",
+    "text": "What kind of feedback do you often hear from others?",
+    "type": "single",
+    "choices": [
+      { "label": "Soft/light colors suit you", "value": "soft_color", "score": { "spring": 1, "summer": 1 } },
+      { "label": "Bold/strong colors suit you", "value": "strong_color", "score": { "fall": 1, "winter": 1 } },
+      { "label": "You have a warm vibe", "value": "warm", "score": { "spring": 1, "fall": 1 } },
+      { "label": "You look calm and urban", "value": "cool", "score": { "summer": 1, "winter": 1 } }
+    ],
+    "tip": "Recall recurring comments from friends or colleagues."
+  }
+]
